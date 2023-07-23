@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String     @id @default(uuid())
+  email       String     @unique
+  password    String
+  fullName    String
+  phoneNumber String
+  gender      String
+  dateOfBirth DateTime   @db.Date
+  createdAt   DateTime   @default(now()) @db.Date
+  updatedAt   DateTime   @default(now()) @db.Date
+  Bookmark    Bookmark[]
+  Order       Order[]
+}
+
+model Order {
+  id                  String     @id @default(uuid())
+  totalPrice          Int
+  status              String
+  createdAt           DateTime   @default(now()) @db.Date
+  checkInAt           DateTime   @db.Date
+  checkOutAt          DateTime   @db.Date
+  paypalOrderId       String     @unique
+  paypalPaymentUrl    String
+  customerName        String
+  customerEmail       String
+  customerPhoneNumber String
+  HotelRoom           HotelRoom? @relation(fields: [HotelRoomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  User                User?      @relation(fields: [UserId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  HotelRoomId         String
+  UserId              String
+}
+
+model Bookmark {
+  id      String @id @default(uuid())
+  User    User?  @relation(fields: [UserId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  Hotel   Hotel? @relation(fields: [HotelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  UserId  String
+  HotelId String
+}
+
+model Hotel {
+  id            String          @id @default(uuid())
+  name          String
+  description   String          @db.Text
+  rating        Int
+  phoneNumber   String
+  mainImage     String          @db.Text
+  location      String
+  lat           String
+  long          String
+  HotelImage    HotelImage[]
+  HotelRoom     HotelRoom[]
+  Bookmark      Bookmark[]
+  HotelFacility HotelFacility[]
+}
+
+model HotelImage {
+  id      String @id @default(uuid())
+  image   String @db.Text
+  Hotel   Hotel? @relation(fields: [HotelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  HotelId String
+}
+
+model HotelFacility {
+  id         String    @id @default(uuid())
+  Hotel      Hotel?    @relation(fields: [HotelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  Facility   Facility? @relation(fields: [FacilityId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  HotelId    String
+  FacilityId String
+}
+
+model HotelRoom {
+  id                String              @id @default(uuid())
+  name              String
+  description       String              @db.Text
+  type              String
+  mainImage         String              @db.Text
+  price             Int
+  Hotel             Hotel?              @relation(fields: [HotelId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  HotelId           String
+  HotelRoomImage    HotelRoomImage[]
+  HotelRoomFacility HotelRoomFacility[]
+  HotelRoom360Image HotelRoom360Image?
+  Order             Order[]
+}
+
+model HotelRoomImage {
+  id          String     @id @default(uuid())
+  image       String     @db.Text
+  HotelRoom   HotelRoom? @relation(fields: [HotelRoomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  HotelRoomId String
+}
+
+model HotelRoom360Image {
+  id          String     @id @default(uuid())
+  image       String     @db.Text
+  HotelRoom   HotelRoom? @relation(fields: [HotelRoomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  HotelRoomId String     @unique
+}
+
+model HotelRoomFacility {
+  id          String     @id @default(uuid())
+  HotelRoom   HotelRoom? @relation(fields: [HotelRoomId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  Facility    Facility?  @relation(fields: [FacilityId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  HotelRoomId String
+  FacilityId  String
+}
+
+model Facility {
+  id                String              @id @default(uuid())
+  name              String
+  type              String
+  HotelFacility     HotelFacility[]
+  HotelRoomFacility HotelRoomFacility[]
+}
